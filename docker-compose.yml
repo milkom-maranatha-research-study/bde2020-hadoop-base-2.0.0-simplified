@@ -1,0 +1,112 @@
+version: "3"
+
+services:
+  namenode:
+    build: ./namenode
+    container_name: namenode
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "9870:9870"
+    networks:
+      - holistic-net
+
+  resourcemanager:
+    build: ./resourcemanager
+    container_name: resourcemanager
+    restart: on-failure
+    depends_on:
+      - namenode
+      - datanode1
+      - datanode2
+      - datanode3
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "8089:8088"
+    networks:
+      - holistic-net
+
+  historyserver:
+    build: ./historyserver
+    container_name: historyserver
+    depends_on:
+      - namenode
+      - datanode1
+      - datanode2
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "8188:8188"
+    networks:
+      - holistic-net
+
+  nodemanager1:
+    build: ./nodemanager
+    container_name: nodemanager1
+    depends_on:
+      - namenode
+      - datanode1
+      - datanode2
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "8042:8042"
+    networks:
+      - holistic-net
+
+  datanode1:
+    build: ./datanode
+    container_name: datanode1
+    depends_on:
+      - namenode
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    networks:
+      - holistic-net
+
+  datanode2:
+    build: ./datanode
+    container_name: datanode2
+    depends_on:
+      - namenode
+    volumes:
+      - hadoop_datanode2:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    networks:
+      - holistic-net
+
+  datanode3:
+    build: ./datanode
+    container_name: datanode3
+    depends_on:
+      - namenode
+    volumes:
+      - hadoop_datanode3:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    networks:
+      - holistic-net
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode1:
+  hadoop_datanode2:
+  hadoop_datanode3:
+  hadoop_historyserver:
+
+networks:
+  # Use the network bridge so that our containers can talk to each other.
+  # @see https://levelup.gitconnected.com/how-to-access-a-docker-container-from-another-container-656398c93576
+  holistic-net:
+    name: holistic-net
+    external: true
