@@ -109,4 +109,4 @@ networks:
   # @see https://levelup.gitconnected.com/how-to-access-a-docker-container-from-another-container-656398c93576
   holistic-net:
     name: holistic-net
-    external: true
+    driver: bridge
